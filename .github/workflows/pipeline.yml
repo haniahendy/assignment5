@@ -2,30 +2,29 @@ name: ML Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-
   validate:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
-      - name: Install packages
-        run: |
-          pip install mlflow
+      - name: Install dependencies
+        run: pip install mlflow
 
       - name: Train model
         run: python train.py
 
-      - name: Save Run ID
+      - name: Create model info
         run: echo "RUN_ID=$(cat run_id.txt)" > model_info.txt
 
       - name: Upload artifact
@@ -34,13 +33,12 @@ jobs:
           name: model-info
           path: model_info.txt
 
-
   deploy:
     needs: validate
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Download artifact
@@ -51,14 +49,14 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
-      - name: Install MLflow
+      - name: Install dependencies
         run: pip install mlflow
 
-      - name: Check accuracy
+      - name: Check threshold
         run: python check_threshold.py
 
-      - name: Mock Docker Build
+      - name: Build Docker (mock)
         run: echo "Building Docker image for Run ID: $(cat 
 model_info.txt)"
